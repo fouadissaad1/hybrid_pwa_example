@@ -1,4 +1,4 @@
-const version = "1.3.0";
+const version = "1.7.1";
 const cacheName = `pokemon-store-${version}`;
 
 console.log(`@@@@ run service_worker.js ${version}`);
@@ -7,6 +7,8 @@ self.addEventListener('install', (e) => {
     console.log(`@@@@ Service Worker install ${version}: handle install event`);
 
     async function initializeCache() {
+        const doesCacheExist=await caches.has(cacheName);
+        if(doesCacheExist)return ;
         console.log(`@@@@ -- Service Worker initializeCache ${version}`);
         const cacheForThisVersion = await caches.open(cacheName);
         return cacheForThisVersion.addAll([
@@ -14,10 +16,24 @@ self.addEventListener('install', (e) => {
             'index.html',
             'js/index.js',
             'manifest.webmanifest',
+            'css/style.css',
+            'css/normalize.css',
+            'css/bootstrap.min.css',
+            'icon/113.png',
+            'images/113.png',
+            'images/202.png',
+            'images/289.png',
+            'images/376.png',
+            'images/862.png'
         ]);
     }
 
     e.waitUntil(initializeCache());
+});
+
+self.addEventListener('message', event => {
+    console.log("request version ");
+    event.source.postMessage({command:"RESPONSE_VERSION",payload:version});
 });
 
 self.addEventListener('activate', event => {
@@ -42,6 +58,7 @@ self.addEventListener('fetch', (e) => {
     console.log(`@@@@ Service Worker ${version}: handle fetch event ${e.request.url}`);
 
     async function findResponseInCache() {
+        await initializeCache();
         const responseFromCache = await caches.match(e.request);
         return responseFromCache || fetch(e.request);
     }

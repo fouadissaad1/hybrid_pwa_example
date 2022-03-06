@@ -1,5 +1,5 @@
 console.log("run index.js");
-
+let serviceWorkerRegistration;
 
 const POKEMON_DATA = [
     {id: 113, name: "chansey", type: "normal"},
@@ -27,13 +27,24 @@ function showNextPokemon() {
     typeElem.innerText = pokemonToShow.type;
 }
 
+async function cacheClear() {
+    const keys = await caches.keys();
+    keys.map(key => caches.delete(key));
+}
 
+async  function requestVersionFromServiceWorker(){
+    console.log("requesting version from service");
+    ServiceWorkerRegistration.active?.postMessage({command:"npx"});
+}
 // Register service worker to control making site work offline
 async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         console.log("start registering Service Worker");
-        const serviceWorkerRegistration = await navigator.serviceWorker.register('service_worker.js');
-        console.log('registration Service Worker done');
+        // serviceWorkerRegistration = await navigator.serviceWorker.register('service_worker.js');
+        serviceWorkerRegistration=await navigator.serviceWorker.register('service_worker.js');
+         console.log('registration Service Worker done');
+         requestVersionFromServiceWorker();
+
     } else {
         console.log("geen Service Worker mogelijk in deze browser");
     }
